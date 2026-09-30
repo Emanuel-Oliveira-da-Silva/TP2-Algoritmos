@@ -33,7 +33,7 @@ int main(){
     char ruta[100];
     strcpy(ruta,carpetaRuta);
     strcat(ruta, nombreDelArchivo);
-    FILE *f = fopen(ruta, "rb");
+    FILE *f = fopen(ruta, "rb+");
 
     if (!f) {
         cout << "No se pudo abrir el archivo principal en la ruta: " << ruta << endl;
