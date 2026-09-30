@@ -99,7 +99,7 @@ int main(){
         return 3;
     }
     while(fread(&Podio,sizeof(PodioCategoria),1,f2) == 1){
-        cout << "_____CATEGORIA: " << Podio.Categoria << "_____" << endl;
+        cout << endl << "_____CATEGORIA: " << Podio.Categoria << "_____" << endl;
         cout << "Top 5 Corredores:" << endl;
         for(int i=0; i<5; i++){
             if(convertirASegundos(Podio.top5[i].llegada) != -1){
