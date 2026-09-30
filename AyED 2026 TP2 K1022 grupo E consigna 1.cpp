@@ -28,12 +28,12 @@ void convertirAStringTiempo(int decSeg, char destino[]);
 void procesarCarrera(char* tituloCarrera, CorredorProcesado lista[], int cant);
 
 int main(){
-    char carpetaRuta[]= "C:/Users/emmanuelp148/Documents/Emmanuel Pilco1/UTN/Algortimos y Estructura de datos/Ejercicios practicos/Archivo corredores 4Refugios.bin";
+    char carpetaRuta[]= "C:/Users/Administrator/Downloads/TP2-Algoritmos-master/TP2-Algoritmos/";
     char nombreDelArchivo[]= "Archivo corredores 4Refugios.bin";
     char ruta[100];
     strcpy(ruta,carpetaRuta);
     strcat(ruta, nombreDelArchivo);
-    FILE *f = fopen(ruta, "rb+");
+    FILE *f = fopen(ruta, "rb");
 
     if (!f) {
         cout << "No se pudo abrir el archivo principal en la ruta: " << ruta << endl;
