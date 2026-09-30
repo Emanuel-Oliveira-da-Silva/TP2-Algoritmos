@@ -39,7 +39,7 @@ PodioCategoria popCategoria(NODOCATEGORIA*&);
 
 //Funciones del programa
 void crearPodio(NODOCATEGORIA*&, RegCorredores);
-void procesarCorredor(PodioCategoria, RegCorredores);
+void procesarCorredor(PodioCategoria&, RegCorredores);
 void crearCategorias(NODO*&, NODOCATEGORIA*&);
 
 int main(){
@@ -64,6 +64,8 @@ int main(){
         fread(&TamanioCorredor, sizeof(RegCorredores), 1, f);
     }
 
+    fclose(f);
+
     
     //Cargar las categorias existentes de los corredores en una pila, cada nodo es una categoria
     //Al mismo tiempo se comparan los tiempos
@@ -73,19 +75,42 @@ int main(){
     crearCategorias(PilaCorredores,PilaPodios);
 
 
-    //Imprimir los podios de cada categoria
+    //Crear un Archivos binario con los podios de cada categoria organizados
+    FILE* f1 =  fopen("Podios.bin", "wb");
+    if (!f1){
+        cout << "ERROR 2: No se pudo crear el archivo binario Podios.bin";
+        return 2;
+    }
+
     while(PilaPodios != NULL){
         PodioCategoria Podio = popCategoria(PilaPodios);
-        cout << "Categoria: " << Podio.Categoria << endl;
+        fwrite(&Podio,sizeof(PodioCategoria),1,f1);
+    }
+
+    fclose(f1);
+
+    
+    //Imprimir los podios de cada categoria del archivo binario Podios.bin
+    PodioCategoria Podio;
+
+    FILE* f2 = fopen("Podios.bin","rb");
+    if(!f2){
+        cout << "ERROR 3: No se pudo abrir el archivo binario Podios.bin";
+        return 3;
+    }
+    while(fread(&Podio,sizeof(PodioCategoria),1,f2) == 1){
+        cout << endl << "_____CATEGORIA: " << Podio.Categoria << "_____" << endl;
         cout << "Top 5 Corredores:" << endl;
         for(int i=0; i<5; i++){
             if(convertirASegundos(Podio.top5[i].llegada) != -1){
-                cout << i+1 << ". " << Podio.top5[i].nombreApellido << " - Llegada: " << Podio.top5[i].llegada << endl;
+                //Mostrar el corredor en la posicion i del podio
+                cout << i+1 << "- " << Podio.top5[i].nombreApellido 
+                << " | Llegada: " << Podio.top5[i].llegada << endl;
             }
         }
-        cout << endl;
     }
     
+    fclose(f2);
     
     return 0;
 }
@@ -151,7 +176,7 @@ void crearPodio(NODOCATEGORIA*& Pila, RegCorredores Corredor){
     pushCategoria(Pila,nuevo);
 }
 
-void procesarCorredor(PodioCategoria Categoria, RegCorredores Corredor){
+void procesarCorredor(PodioCategoria& Categoria, RegCorredores Corredor){
     RegCorredores* Podio = Categoria.top5;
 
     //Verificar si el corredor termino la carrera
