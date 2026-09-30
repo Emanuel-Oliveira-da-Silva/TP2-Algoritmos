@@ -2,7 +2,7 @@
 #include <cstring>
 using namespace std;
 
-struct RegCorredores{
+struct RegCorredores {
     int numero;
     char nombreApellido[50];
     char categoria[50];
@@ -11,7 +11,7 @@ struct RegCorredores{
     char llegada[11];
 };
 
-struct CorredorProcesado{
+struct CorredorProcesado {
     RegCorredores datos;
     int tiempoSegundos;
     int posGeneral;
@@ -22,7 +22,7 @@ struct CorredorProcesado{
     bool termino;
 };
 
-struct RegPodio{
+struct RegPodio {
     char carrera[30];
     char categoria[50];
     int posicionCat;
@@ -32,10 +32,12 @@ struct RegPodio{
 };
 
 int convertirASegundos(const char llegada[]);
-void ordenarLista(CorredorProcesado lista[], int total);
+void convertirAStringTiempo(int decSeg, char destino[]);
+void ordenarPodio(RegPodio podios[], int cantPodios);
+void mostrarPodio(RegPodio podios[], int cantPodios, const char* nomArch);
 
 int main() {
-    char carpetaRuta[] = "C:/Users/emmanuelp148/Documents/Emmanuel Pilco1/UTN/Algortimos y Estructura de datos/Ejercicios practicos/Archivo corredores 4Refugios.bin";
+    char carpetaRuta[] = "C:/Users/Matias Pereyra/OneDrive/Documentos/Visual Studio 2022/";
     char nombreDelArchivo[] = "Archivo corredores 4Refugios.bin";
     char ruta[100];
     strcpy(ruta, carpetaRuta);
@@ -85,7 +87,7 @@ int main() {
                 cambiar = true;
             }
             else if (clasica[i].termino && clasica[j].termino) {
-                if (clasica[i].tiempoSegundos < clasica[j].tiempoSegundos) {
+                if (clasica[i].tiempoSegundos > clasica[j].tiempoSegundos) {
                     cambiar = true;
                 }
             }
@@ -106,7 +108,7 @@ int main() {
                 cambiar = true;
             }
             else if (nonStop[i].termino && nonStop[j].termino) {
-                if (nonStop[i].tiempoSegundos < nonStop[j].tiempoSegundos) {
+                if (nonStop[i].tiempoSegundos > nonStop[j].tiempoSegundos) {
                     cambiar = true;
                 }
             }
@@ -119,7 +121,7 @@ int main() {
         }
     }
 
-    
+
     for (int i = 0; i < cantClasica; i++) {
         int posicionCat = 1;
         for (int j = 0; j < i; j++) {
@@ -130,25 +132,133 @@ int main() {
         clasica[i].posCat = clasica[i].termino ? posicionCat : 0;
     }
 
-    for (int i = 0; i < cantNonstop; i++) {
+    for (int i = 0; i < cantNonStop; i++) {
         int posicionCat = 1;
         for (int j = 0; j < i; j++) {
-            if (nonstop[j].termino && strcmp(nonstop[j].datos.categoria, nonstop[i].datos.categoria) == 0) {
+            if (nonStop[j].termino && strcmp(nonStop[j].datos.categoria, nonStop[i].datos.categoria) == 0) {
                 posicionCat++;
             }
         }
-        nonstop[i].posCat = nonstop[i].termino ? posicionCat : 0;
+        nonStop[i].posCat = nonStop[i].termino ? posicionCat : 0;
     }
 
+    RegPodio podios[100];
+    int cantPodios = 0;
+
+    for (int i = 0; i < cantClasica; i++) {
+        if (clasica[i].termino && clasica[i].posCat >= 1 && clasica[i].posCat <= 3) {
+            strcpy(podios[cantPodios].carrera, "4 Refugios Clasica");
+            strcpy(podios[cantPodios].categoria, clasica[i].datos.categoria);
+            podios[cantPodios].posicionCat = clasica[i].posCat;
+            podios[cantPodios].numero = clasica[i].datos.numero;
+            strcpy(podios[cantPodios].nombreApellido, clasica[i].datos.nombreApellido);
+            podios[cantPodios].tiempoSegundos = clasica[i].tiempoSegundos;
+            cantPodios++;
+        }
+    }
+
+    for (int i = 0; i < cantNonStop; i++) {
+        if (nonStop[i].termino && nonStop[i].posCat >= 1 && nonStop[i].posCat <= 3) {
+            strcpy(podios[cantPodios].carrera, "4 Refugios NonStop");
+            strcpy(podios[cantPodios].categoria, nonStop[i].datos.categoria);
+            podios[cantPodios].posicionCat = nonStop[i].posCat;
+            podios[cantPodios].numero = nonStop[i].datos.numero;
+            strcpy(podios[cantPodios].nombreApellido, nonStop[i].datos.nombreApellido);
+            podios[cantPodios].tiempoSegundos = nonStop[i].tiempoSegundos;
+            cantPodios++;
+        }
+    }
+
+    ordenarPodio(podios, cantPodios);
+    mostrarPodio(podios, cantPodios, "podio.dat");
+
+    delete[] clasica;
+    delete[] nonStop;
 
     return 0;
 }
 
 
 int convertirASegundos(const char llegada[]) {
-    //...
+    if (strcmp(llegada, "No termino") == 0 || strcmp(llegada, "DNF") == 0 || strncmp(llegada, "DNF", 3) == 0 || strncmp(llegada, "DSQ", 3) == 0) {
+        return -1;
+    }
+    int h = (llegada[0] - '0') * 10 + (llegada[1] - '0');
+    int m = (llegada[3] - '0') * 10 + (llegada[4] - '0');
+    int s = (llegada[6] - '0') * 10 + (llegada[7] - '0');
+    int d = (llegada[9] - '0');
+    return (h * 3600 + m * 60 + s) * 10 + d;
 }
 
-void ordenarLista(CorredorProcesado lista[], int total) {
-    //...
+void convertirAStringTiempo(int decSeg, char destino[]) {
+    if (decSeg < 0) {
+        strcpy(destino, "No Termino");
+        return;
+    }
+    int sTotales = decSeg / 10;
+    int d = decSeg % 10;
+    int h = sTotales / 3600;
+    int m = (sTotales % 3600) / 60;
+    int s = sTotales % 60;
+
+    sprintf(destino, "%02d:%02d:%02d.%d", h, m, s, d);
+}
+
+void ordenarPodio(RegPodio podios[], int cantPodios) {
+    bool cambiar;
+    RegPodio temp;
+
+    for (int i = 0; i < cantPodios - 1; i++) {
+        for (int j = i + 1; j < cantPodios; j++) {
+            cambiar = false;
+
+            if (strcmp(podios[i].carrera, podios[j].carrera) > 0) {
+                cambiar = true;
+            }
+            else if (strcmp(podios[i].carrera, podios[j].carrera) == 0) {
+                if (strcmp(podios[i].categoria, podios[j].categoria) > 0) {
+                    cambiar = true;
+                }
+                else if (strcmp(podios[i].categoria, podios[j].categoria) == 0) {
+                    if (podios[i].posicionCat > podios[j].posicionCat) {
+                        cambiar = true;
+                    }
+                }
+            }
+
+            if (cambiar) {
+                temp = podios[i];
+                podios[i] = podios[j];
+                podios[j] = temp;
+            }
+        }
+    }
+}
+
+void mostrarPodio(RegPodio podios[], int cantPodios, const char* nomArch) {
+    FILE* f = fopen(nomArch, "wb");
+    if (f == NULL) {
+        printf("Error al crear el archivo binario");
+        return;
+    }
+
+    cout << "-----------------------------------------------------------------------------------------" << endl;
+    cout << " REPORTE DE PODIOS (TOP 3 POR CATEGORIA)" << endl;
+    cout << "-----------------------------------------------------------------------------------------" << endl;
+    cout << "Carrera            | Categoria                                      | Pos | N  | Nombre                  | Tiempo" << endl;
+    cout << "-----------------------------------------------------------------------------------------" << endl;
+
+    for (int i = 0; i < cantPodios; i++) {
+        fwrite(&podios[i], sizeof(RegPodio), 1, f);
+        char sTiempo[15];
+        convertirAStringTiempo(podios[i].tiempoSegundos, sTiempo);
+
+        cout << podios[i].carrera << " | "
+            << podios[i].categoria << " | "
+            << podios[i].posicionCat << " | "
+            << podios[i].numero << " | "
+            << podios[i].nombreApellido << " | "
+            << sTiempo << endl;
+    }
+    fclose(f);
 }
